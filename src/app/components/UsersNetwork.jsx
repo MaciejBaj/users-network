@@ -37,7 +37,7 @@ class UsersNetwork extends React.Component {
       const connections = edges.map(edge => users.find(user => user['@rid'] === edge.in));
       this.setState({
         connections,
-        users: _.differenceBy(users, connections, '@rid')
+        users: _.differenceBy(users, connections.concat(this.props.user), '@rid')
       });
     });
   }

@@ -7,6 +7,7 @@ export function createDatabase(server, name) {
     storage: 'plocal'
   }).then(db => {
     db.class.create('User', 'V');
+    db.class.create('ConnectedWith', 'E');
     console.log('Created Database:', db.name);
     db.query(`INSERT INTO User CONTENT ${JSON.stringify({
       login: 'admin',
