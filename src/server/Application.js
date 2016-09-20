@@ -23,6 +23,10 @@ export class Application {
     this.serveStatics();
     this.routes();
     this.connectDbAndStartApi();
+    // const defaultRedirectRouter = new Router();
+    // defaultRedirectRouter.get('/*', this.home);
+    // this.app.use(defaultRedirectRouter.routes());
+
     this.start();
   }
 
@@ -48,12 +52,15 @@ export class Application {
     });
 
     apiRouter
-      .get('/users', Users.isAdmin, Users.getAll)
-      .get('/users/:id', Users.getById)
-      .post('/users', Users.insert)
-      .put('/users', Users.update)
-      .del('/users/:id', Users.delete)
-      .post('/users/connection', Users.addConnection);
+      .get('/user', Users.getLoggedUser)
+      .get('/users', Auth.isAuthenticated, Users.getAll)
+      .get('/users/:id', Auth.isAuthenticated, Users.getById)
+      .post('/users', Auth.isAuthenticated, Users.insert)
+      .put('/users', Auth.isAuthenticated, Users.update)
+      .del('/users/:id', Auth.isAuthenticated, Users.delete)
+      .post('/users/connection', Auth.isAuthenticated, Users.addConnection)
+      .get('/user/connections', Auth.isAuthenticated, Users.getUserConnections)
+      .get('/users/connections', Auth.isAuthenticated, Auth.isAdmin, Users.getConnections);
 
     this.app.use(apiRouter.routes());
   }
@@ -63,12 +70,12 @@ export class Application {
     const router = new Router();
     router
       .get('/', Auth.isAuthenticated, this.redirectToApp)
-      .get('/*', this.home)
       .get('/app', Auth.isAuthenticated, this.home)
-      // .get('/login', Auth.login)
+      .get('/admin', Auth.isAuthenticated, Auth.isAdmin, this.home)
       .post('/login', Auth.login)
       .post('/signIn', Auth.signIn)
-      .get('/logout', Auth.logout);
+      .get('/logout', Auth.logout)
+      .get('/login', this.home);
 
     this.app.keys = ['your-session-secret'];
     this.app.use(session({

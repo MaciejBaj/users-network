@@ -1,35 +1,43 @@
 import React from 'react';
 
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import AppBar from 'material-ui/AppBar';
-import IconButton from 'material-ui/IconButton';
-import IconMenu from 'material-ui/IconMenu';
-import MenuItem from 'material-ui/MenuItem';
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
-import { browserHistory } from 'react-router';
+import Navbar from './Navbar.jsx';
+import { Provider } from 'react-redux';
+import { createStore } from 'redux';
+import {appReducers} from '../reducers';
+import {addHistory, addUser} from '../actions';
+import {getReq} from '../helpers/requests';
+
+
+const store = createStore(appReducers);
 
 export class AppRoot extends React.Component {
-  render() {
+
+  constructor(props) {
+    super(props);
+    store.dispatch(addHistory(props.history));
+  }
+
+  componentDidMount() {
+    getReq('api/v1/user', (res) => {
+      try {
+        const user = JSON.parse(res.target.response);
+        store.dispatch(addUser(user));
+      }
+      catch(err) { }
+    });
+  }
+
+    render() {
+    console.log(store);
     return (
       <MuiThemeProvider>
-        <div>
-          <AppBar
-            title="users network"
-            iconElementLeft={<p></p>}
-            iconElementRight={
-              <IconMenu
-                iconButtonElement={
-                  <IconButton><MoreVertIcon /></IconButton>
-                }
-                targetOrigin={{horizontal: 'right', vertical: 'top'}}
-                anchorOrigin={{horizontal: 'right', vertical: 'top'}}
-              >
-                <MenuItem primaryText="Sign out" onTouchTap={() => {window.location.href = '/logout'}} />
-              </IconMenu>
-            }
-          />
-          {this.props.children}
-        </div>
+        <Provider store={store}>
+          <div>
+            <Navbar/>
+            {this.props.children}
+          </div>
+        </Provider>
       </MuiThemeProvider>
     );
   }

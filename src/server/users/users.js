@@ -1,35 +1,41 @@
 'use strict';
-import {Auth} from '../auth';
 
 export class Users {
-
-  static *isAdmin(next) {
-    if (this.session.user && this.session.user.role === 'admin') {
-      yield next;
-    }
-    else {
-      this.throw(401, 'access_denied');
-    }
-  }
   
   static *getAll(next) {
-    this.body = yield this.app.db.getAll();
+    const users = yield this.app.db.getAll(null, 'User');
+    this.body = users.map(user => {
+      delete user.password;
+      return user;
+    });
   }
   
   static *getById(next) {
-    this.body = yield this.app.db.getById(this.params.id);
+    this.body = yield this.app.db.getById(this.params.id, 'User');
+  }
+
+  static *getLoggedUser(next) {
+    this.body = yield this.session.user || {};
   }
 
   static *insert(next) {
-    this.body = yield this.app.db.insert(this.request.body);
+    this.body = yield this.app.db.insert(this.request.body, 'User');
   }
 
   static *update(next) {
     this.throw(501, "not_implemented");
   }
+  
+  static *getConnections(next) {
+    this.body = yield this.app.db.getEdges(null, 'ConnectedWith');
+  }
 
   static *delete(next) {
-    this.body = yield this.app.db.delete(this.params.id);
+    this.body = yield this.app.db.delete(this.params.id, 'User');
+  }
+  
+  static *getUserConnections(next) {
+    this.body = yield this.app.db.getEdges({out: this.session.user['@rid']}, 'ConnectedWith');
   }
 
   static *addConnection(next) {
@@ -39,7 +45,7 @@ export class Users {
       this.throw(400, "bad request");
     }
     else {
-      this.body = yield this.app.db.addConnection(requestingUser, userToConnect);
+      this.body = yield this.app.db.addConnection(requestingUser, userToConnect, 'ConnectedWith');
     }
   }
 

@@ -1,14 +1,17 @@
 import React from 'react';
 import {FlatButton, TextField, RaisedButton, Snackbar, RefreshIndicator} from 'material-ui';
-import {post} from '../helpers/post';
-import { browserHistory } from 'react-router';
+import {post} from '../helpers/requests';
+import { connect } from 'react-redux'
+import { addUser } from '../actions'
 
-export const LOGIN_MODES = {
-  login: 'login',
-  signIn: 'signIn'
-};
+class LoginForm extends React.Component {
 
-export class LoginForm extends React.Component {
+  static get LOGIN_MODES() {
+   return {
+     login: 'login',
+     signIn: 'signIn'
+   }
+  };
 
   constructor(props) {
     super(props);
@@ -27,13 +30,14 @@ export class LoginForm extends React.Component {
   onSubmit (event) {
     event.preventDefault();
     const { login, password } = this.state;
-    const urlAddress = LOGIN_MODES[this.props.mode] || LOGIN_MODES.login;
+    const urlAddress = LoginForm.LOGIN_MODES[this.props.mode] || LoginForm.LOGIN_MODES.login;
     post(urlAddress, { login, password }, (response) => {
       if (response.target.status !== 200) {
         this.setState({errorMessage: response.target.responseText, showAlert: true});
       }
       else {
-        window.location.href = response.target.responseURL;
+        this.props.dispatch(addUser(JSON.parse(response.target.response)));
+        this.props.history.push('/app');
       }
     }, (error) => {
       console.error(error);
@@ -71,13 +75,13 @@ export class LoginForm extends React.Component {
           <div>
             <FlatButton
               type="submit"
-              label={this.props.mode === LOGIN_MODES.signIn ? 'sign in' : 'login'}
+              label={this.props.mode === LoginForm.LOGIN_MODES.signIn ? 'sign in' : 'login'}
               primary={true} />
             <FlatButton
               type="button"
-              label={this.props.mode === LOGIN_MODES.signIn ? 'login' : 'sign in'}
+              label={this.props.mode === LoginForm.LOGIN_MODES.signIn ? 'login' : 'sign in'}
               primary={true}
-              onClick={() => {window.location.href = this.props.mode === LOGIN_MODES.signIn ? '/login' : '/signIn'}}/>
+              onClick={() => {window.location.href = this.props.mode === LoginForm.LOGIN_MODES.signIn ? '/login' : '/signIn'}}/>
           </div>
           <Snackbar
             open={this.state.showAlert}
@@ -89,6 +93,13 @@ export class LoginForm extends React.Component {
         </form>
       </div>)
   }
-
-
 }
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.user,
+    history: state.history
+  }
+};
+
+export default connect(mapStateToProps)(LoginForm);

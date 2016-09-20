@@ -3,34 +3,40 @@ export class OrientDatabase {
     this.db = db;
   }
 
-  getById(id) {
-    return this.db.select().from('User').where({
+  getById(id, className) {
+    return this.db.select().from(className).where({
         '@rid': `#${id}`
       }).one();
   }
 
-  get(field, value) {
-    return this.db.select().from('User').where({
+  get(field, value, className) {
+    return this.db.select().from(className).where({
       [field]: value
     }).one();
   }
 
-  getAll() {
-    return this.db.select().from('User').all();
+  getAll(fields, className) {
+    return this.db.select().from(className).all();
   }
 
-  insert(data) {
-    return this.db.query(`INSERT INTO User CONTENT ${JSON.stringify(data)}`);
+  insert(data, className) {
+    return this.db.query(`INSERT INTO ${className} CONTENT ${JSON.stringify(data)}`);
   }
 
-  delete(id) {
-    return this.db.delete().from('User')
+  delete(id, className) {
+    return this.db.delete().from(className)
       .where(`@rid = #${id}`).limit(1).scalar();
   }
 
-  addConnection(requestingUser, userToConnect) {
-    return this.db.create('EDGE', 'ConnectedWith')
+  addConnection(requestingUser, userToConnect, edgeName) {
+    return this.db.create('EDGE', edgeName)
       .from(requestingUser['@rid']).to(userToConnect['@rid']).one();
+  }
+
+  getEdges(query, edgeName) {
+    return query ?
+      this.db.select().from(edgeName).where(query).all() :
+      this.db.select().from(edgeName).all();
   }
 
 }
