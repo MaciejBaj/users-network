@@ -28,12 +28,11 @@ export class AppRoot extends React.Component {
     });
   }
 
-    render() {
-    console.log(store);
+  render() {
     return (
       <MuiThemeProvider>
         <Provider store={store}>
-          <div>
+          <div className="app__container">
             <Navbar/>
             {this.props.children}
           </div>

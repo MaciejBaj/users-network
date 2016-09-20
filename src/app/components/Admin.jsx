@@ -9,6 +9,30 @@ export class Admin extends React.Component {
     super(props);
   }
 
+  componentDidMount() {
+    UsersNetwork.fetchUsersAndEdges(false).then(([users, edges]) => {
+      const nodes = users.reduce((memo, user) => {
+        memo[user['login']] = {
+          name: user['login'],
+          index: memo[user['login']] ? memo[user['login']].index : Object.keys(memo).length
+        };
+        return memo;
+      }, {});
+
+      const links = edges.map(edge => {
+        let source = users.find(user => user['@rid'] === edge.out);
+        let target = users.find(user => user['@rid'] === edge.in);
+        return {
+          source: nodes[source.login].index,
+          target: nodes[target.login].index,
+          type: 'suit'
+        }
+      });
+
+      this.drawGraph(nodes, links);
+    });
+  }
+
   drawGraph(nodes, links) {
     var width = 960,
       height = 500;
@@ -78,75 +102,9 @@ export class Admin extends React.Component {
     }
   }
 
-  componentDidMount() {
-    UsersNetwork.fetchUsersAndEdges(false).then(([users, edges]) => {
-
-      const nodes = users.reduce((memo, user) => {
-        memo[user['login']] = {
-          name: user['login'],
-          index: memo[user['login']] ? memo[user['login']].index : Object.keys(memo).length
-        };
-        return memo;
-      }, {});
-
-      const links = edges.map(edge => {
-        let source = users.find(user => user['@rid'] === edge.out);
-        let target = users.find(user => user['@rid'] === edge.in);
-        return {
-          source: nodes[source.login].index,
-          target: nodes[target.login].index,
-          type: 'suit'
-        }
-      });
-
-      this.drawGraph(nodes, links);
-    });
-    // http://blog.thomsonreuters.com/index.php/mobile-patent-suits-graphic-of-the-day/
-    var links = [
-      {source: "Microsoft", target: "Amazon", type: "licensing"},
-      {source: "Microsoft", target: "HTC", type: "licensing"},
-      {source: "Samsung", target: "Apple", type: "suit"},
-      {source: "Motorola", target: "Apple", type: "suit"},
-      {source: "Nokia", target: "Apple", type: "resolved"},
-      {source: "HTC", target: "Apple", type: "suit"},
-      {source: "Kodak", target: "Apple", type: "suit"},
-      {source: "Microsoft", target: "Barnes & Noble", type: "suit"},
-      {source: "Microsoft", target: "Foxconn", type: "suit"},
-      {source: "Oracle", target: "Google", type: "suit"},
-      {source: "Apple", target: "HTC", type: "suit"},
-      {source: "Microsoft", target: "Inventec", type: "suit"},
-      {source: "Samsung", target: "Kodak", type: "resolved"},
-      {source: "LG", target: "Kodak", type: "resolved"},
-      {source: "RIM", target: "Kodak", type: "suit"},
-      {source: "Sony", target: "LG", type: "suit"},
-      {source: "Kodak", target: "LG", type: "resolved"},
-      {source: "Apple", target: "Nokia", type: "resolved"},
-      {source: "Qualcomm", target: "Nokia", type: "resolved"},
-      {source: "Apple", target: "Motorola", type: "suit"},
-      {source: "Microsoft", target: "Motorola", type: "suit"},
-      {source: "Motorola", target: "Microsoft", type: "suit"},
-      {source: "Huawei", target: "ZTE", type: "suit"},
-      {source: "Ericsson", target: "ZTE", type: "suit"},
-      {source: "Kodak", target: "Samsung", type: "resolved"},
-      {source: "Apple", target: "Samsung", type: "suit"},
-      {source: "Kodak", target: "RIM", type: "suit"},
-      {source: "Nokia", target: "Qualcomm", type: "suit"}
-    ];
-
-    var nodes = {};
-
-// Compute the distinct nodes from the links.
-    links.forEach(function(link) {
-      link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
-      link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
-    });
-
-
-  }
 
 
   render () {
-
     return (
       <div>
         <div id="users-connections-graph"></div>

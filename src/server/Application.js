@@ -10,7 +10,6 @@ import {Auth} from './auth';
 
 import {createDatabase} from './db/createDb';
 import {OrientDBServer} from './db/orientServer';
-import {classes} from './db/usersNetworkDbStructure';
 import render from './lib/render';
 import {Users} from './users/users';
 
@@ -73,6 +72,7 @@ export class Application {
       .get('/app', Auth.isAuthenticated, this.home)
       .get('/admin', Auth.isAuthenticated, Auth.isAdmin, this.home)
       .post('/login', Auth.login)
+      .get('/signIn', this.home)
       .post('/signIn', Auth.signIn)
       .get('/logout', Auth.logout)
       .get('/login', this.home);
@@ -102,7 +102,7 @@ export class Application {
 
     dbServer.hasDatabase(this.name).then((hasDb) => {
       if (!hasDb) {
-        createDatabase(dbServer.server, this.name, classes);
+        createDatabase(dbServer.server, this.name);
       }
 
       this.app.db = dbServer.connectDb(this.name, 'admin', 'admin');

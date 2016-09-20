@@ -1,6 +1,6 @@
 import React from 'react';
-import {FlatButton, TextField, RaisedButton, Snackbar, RefreshIndicator} from 'material-ui';
-import {post} from '../helpers/requests';
+import { FlatButton, TextField, Snackbar } from 'material-ui';
+import { post } from '../helpers/requests';
 import { connect } from 'react-redux'
 import { addUser } from '../actions'
 
