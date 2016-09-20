@@ -58,7 +58,6 @@ class UsersNetwork extends React.Component {
   }
 
   render () {
-    console.log("users network props render", this.props.user);
     return (
       <div>
         <h2>Dear {this.props.user.login}, welcome to users network</h2>
